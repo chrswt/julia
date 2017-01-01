@@ -1638,4 +1638,6 @@ iteratoreltype(::Type{Task}) = EltypeUnknown()
 
 isempty(::Task) = error("isempty not defined for Tasks")
 
+@deprecate_binding FloatRange StepRangeHiLo
+
 # End deprecations scheduled for 0.6
