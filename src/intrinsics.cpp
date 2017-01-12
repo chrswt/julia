@@ -625,8 +625,8 @@ static jl_cgval_t generic_trunc(jl_value_t *targ, jl_value_t *x, jl_codectx_t *c
     if (check) {
         Value *back = signd ? builder.CreateSExt(ans, ix->getType()) :
             builder.CreateZExt(ans, ix->getType());
-        raise_exception_unless(builder.CreateICmpEQ(back, ix),
-                               literal_pointer_val(jl_inexact_exception), ctx);
+        emit_inexacterror_unless(builder.CreateICmpEQ(back, ix),
+                                 targ, x, ctx);
     }
     return mark_julia_type(ans, false, jlto, ctx);
 }
@@ -1242,11 +1242,11 @@ static Value *emit_untyped_intrinsic(intrinsic f, Value *x, Value *y, Value *z, 
     case check_top_bit:
         // raise InexactError if argument's top bit is set
         x = JL_INT(x);
-        raise_exception_if(builder.
-                           CreateTrunc(builder.
-                                       CreateLShr(x, ConstantInt::get(t, t->getPrimitiveSizeInBits()-1)),
-                                       T_int1),
-                           literal_pointer_val(jl_inexact_exception), ctx);
+        emit_inexacterror_if(builder.
+                             CreateTrunc(builder.
+                                         CreateLShr(x, ConstantInt::get(t, t->getPrimitiveSizeInBits()-1)),
+                                         T_int1),
+                             xtyp, jl_false, ctx);
         return x;
 
     case eq_int:  *newtyp = jl_bool_type; return builder.CreateICmpEQ(JL_INT(x), JL_INT(y));
